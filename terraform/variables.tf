@@ -9,7 +9,7 @@ variable "region" {
   description = "Região padrão GCP (Carolina do Sul)"
 }
 
-variable "github_repo" {
+variable "github_org" {
   type        = string
-  description = "Repositório GitHub no formato 'org/repo' (ex: acme/spartacus)"
+  description = "Organização GitHub (ex: Digital-Business-One)"
 }

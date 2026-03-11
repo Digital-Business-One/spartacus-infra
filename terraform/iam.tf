@@ -41,12 +41,13 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 
   attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.actor"      = "assertion.actor"
-    "attribute.repository" = "assertion.repository"
+    "google.subject"            = "assertion.sub"
+    "attribute.actor"           = "assertion.actor"
+    "attribute.repository"      = "assertion.repository"
+    "attribute.repository_owner" = "assertion.repository_owner"
   }
 
-  attribute_condition = "assertion.repository == \"${var.github_repo}\""
+  attribute_condition = "attribute.repository_owner == \"${var.github_org}\""
 }
 
 # ─── Service Account: GitHub Actions ─────────────────────────────────────────
@@ -61,7 +62,7 @@ resource "google_service_account" "github_actions" {
 resource "google_service_account_iam_member" "github_wif_binding" {
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_repo}"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository_owner/${var.github_org}"
 }
 
 resource "google_project_iam_member" "github_artifact_writer" {
