@@ -1,0 +1,32 @@
+name: CI — Infra
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/**"
+
+jobs:
+  # ─── Terraform Validate ─────────────────────────────────────────────────────
+  validate:
+    name: Terraform Fmt & Validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: terraform init
+        run: terraform init -backend=false
+
+      - name: terraform validate
+        run: terraform validate
