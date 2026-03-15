@@ -19,6 +19,12 @@ resource "google_project_iam_member" "cloud_run_storage" {
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+resource "google_project_iam_member" "cloud_run_firebase_auth" {
+  project = var.project_id
+  role    = "roles/firebaseauth.admin"
+  member  = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
 # ─── Workload Identity Federation (GitHub Actions — keyless) ─────────────────
 
 resource "google_iam_workload_identity_pool" "github" {
@@ -41,9 +47,9 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 
   attribute_mapping = {
-    "google.subject"            = "assertion.sub"
-    "attribute.actor"           = "assertion.actor"
-    "attribute.repository"      = "assertion.repository"
+    "google.subject"             = "assertion.sub"
+    "attribute.actor"            = "assertion.actor"
+    "attribute.repository"       = "assertion.repository"
     "attribute.repository_owner" = "assertion.repository_owner"
   }
 

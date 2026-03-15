@@ -42,21 +42,26 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
-        name = "MAILERSEND_API_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.mailersend_api_key.secret_id
-            version = "latest"
-          }
-        }
+        name  = "ROOT_PROJECT_ID"
+        value = "spartacus"
       }
+
+      # MAILERSEND_API_KEY removida — e-mails agora são enviados
+      # pela Firebase Extension (firestore-mailersend-email),
+      # que gerencia a chave via Secret Manager próprio.
     }
+  }
+
+  # Imagem gerenciada pelo CI/CD — Terraform não deve sobrescrever após criação inicial
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
   }
 
   depends_on = [
     google_project_service.apis,
     google_artifact_registry_repository.backend,
-    google_secret_manager_secret.mailersend_api_key,
   ]
 }
 
