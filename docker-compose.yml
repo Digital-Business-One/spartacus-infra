@@ -6,9 +6,11 @@ services:
       dockerfile: Dockerfile
     working_dir: /app
     command: >
-      bash -c "echo '{\"emulators\":{\"auth\":{\"port\":9099,\"host\":\"0.0.0.0\"},\"firestore\":{\"port\":8080,\"host\":\"0.0.0.0\"},\"storage\":{\"port\":9199,\"host\":\"0.0.0.0\"},\"ui\":{\"enabled\":true,\"host\":\"0.0.0.0\",\"port\":4000}}}' > /app/firebase.json &&
+      bash -c "
+      echo 'rules_version = \"2\"; service firebase.storage { match /b/{bucket}/o { match /{allPaths=**} { allow read, write: if true; } } }' > /app/storage.rules &&
+      echo '{\"storage\":{\"rules\":\"storage.rules\"},\"emulators\":{\"auth\":{\"port\":9099,\"host\":\"0.0.0.0\"},\"firestore\":{\"port\":8080,\"host\":\"0.0.0.0\"},\"storage\":{\"port\":9199,\"host\":\"0.0.0.0\"},\"ui\":{\"enabled\":true,\"host\":\"0.0.0.0\",\"port\":4000}}}' > /app/firebase.json &&
       npx -y firebase-tools@latest emulators:start
-      --project demo-spartacus
+      --project spartacus-artes-marciais
       --only firestore,auth,storage
       --import=/emulator-data
       --export-on-exit"
@@ -21,7 +23,7 @@ services:
       - ./emulator-data:/emulator-data
     environment:
       - FIREBASE_TOKEN=${FIREBASE_TOKEN:-}
-      - GOOGLE_CLOUD_PROJECT=${FIREBASE_PROJECT_ID:-demo-spartacus}
+      - GOOGLE_CLOUD_PROJECT=${FIREBASE_PROJECT_ID:-spartacus-artes-marciais}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000"]
       interval: 10s
@@ -42,8 +44,8 @@ services:
       - FIRESTORE_EMULATOR_HOST=emulators:8080
       - FIREBASE_AUTH_EMULATOR_HOST=emulators:9099
       - FIREBASE_STORAGE_EMULATOR_HOST=emulators:9199
-      - GOOGLE_CLOUD_PROJECT=${FIREBASE_PROJECT_ID:-demo-spartacus}
-      - ROOT_PROJECT_ID=${ROOT_PROJECT_ID:-demo-spartacus}
+      - GOOGLE_CLOUD_PROJECT=${FIREBASE_PROJECT_ID:-spartacus-artes-marciais}
+      - ROOT_PROJECT_ID=${ROOT_PROJECT_ID:-spartacus-artes-marciais}
     depends_on:
       emulators:
         condition: service_healthy
