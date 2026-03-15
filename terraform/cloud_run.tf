@@ -46,15 +46,9 @@ resource "google_cloud_run_v2_service" "backend" {
         value = "spartacus"
       }
 
-      env {
-        name = "MAILERSEND_API_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.mailersend_api_key.secret_id
-            version = "latest"
-          }
-        }
-      }
+      # MAILERSEND_API_KEY removida — e-mails agora são enviados
+      # pela Firebase Extension (firestore-mailersend-email),
+      # que gerencia a chave via Secret Manager próprio.
     }
   }
 
@@ -68,7 +62,6 @@ resource "google_cloud_run_v2_service" "backend" {
   depends_on = [
     google_project_service.apis,
     google_artifact_registry_repository.backend,
-    google_secret_manager_secret.mailersend_api_key,
   ]
 }
 
