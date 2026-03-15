@@ -42,6 +42,11 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
+        name  = "ROOT_PROJECT_ID"
+        value = "spartacus"
+      }
+
+      env {
         name = "MAILERSEND_API_KEY"
         value_source {
           secret_key_ref {
@@ -51,6 +56,13 @@ resource "google_cloud_run_v2_service" "backend" {
         }
       }
     }
+  }
+
+  # Imagem gerenciada pelo CI/CD — Terraform não deve sobrescrever após criação inicial
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
   }
 
   depends_on = [
