@@ -18,6 +18,8 @@ resource "google_firestore_database" "default" {
 
 # ─── Firebase Auth (Identity Toolkit) ─────────────────────────────────────────
 # Habilita o Firebase Auth via Identity Platform.
+# IMPORTANTE: declarar email{} aqui para que o Terraform não desabilite
+# o provider ao aplicar o bloco sign_in.
 # O Google Sign-In como provider OAuth é ativado no Firebase Console
 # (Authentication → Sign-in method → Google) — operação única, não requer Terraform.
 resource "google_identity_platform_config" "auth" {
@@ -26,6 +28,11 @@ resource "google_identity_platform_config" "auth" {
 
   sign_in {
     allow_duplicate_emails = false
+
+    email {
+      enabled           = true
+      password_required  = true
+    }
   }
 
   depends_on = [
