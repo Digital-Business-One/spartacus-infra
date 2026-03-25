@@ -46,9 +46,10 @@ resource "google_cloud_run_v2_service" "backend" {
         value = "spartacus"
       }
 
-      # MAILERSEND_API_KEY removida — e-mails agora são enviados
-      # pela Firebase Extension (firestore-mailersend-email),
-      # que gerencia a chave via Secret Manager próprio.
+      env {
+        name  = "CORS_ORIGINS"
+        value = var.cors_origins
+      }
     }
   }
 

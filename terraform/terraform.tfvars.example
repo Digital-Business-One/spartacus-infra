@@ -1,7 +1,8 @@
 # Copie este arquivo para terraform.tfvars e preencha os valores
 # terraform.tfvars NÃO deve ser commitado (está no .gitignore)
 
-project_id = "spartacus-artes-marciais"
-github_org = "Digital-Business-One"
-region     = "us-east1"  
+project_id   = "spartacus-artes-marciais"
+github_org   = "Digital-Business-One"
+region       = "us-east1"
+cors_origins = "https://backoffice.spartacus.app.br,https://spartacus.app.br"
 
