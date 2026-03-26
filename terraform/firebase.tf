@@ -41,6 +41,39 @@ resource "google_identity_platform_config" "auth" {
   ]
 }
 
+# ─── Firebase Storage ──────────────────────────────────────────────────────────
+
+resource "google_firebase_storage_bucket" "default" {
+  provider  = google-beta
+  project   = var.project_id
+  bucket_id = google_storage_bucket.default.name
+
+  depends_on = [google_firebase_project.spartacus]
+}
+
+resource "google_storage_bucket" "default" {
+  project                     = var.project_id
+  name                        = "${var.project_id}.firebasestorage.app"
+  location                    = var.region
+  uniform_bucket_level_access = true
+
+  cors {
+    origin          = ["*"]
+    method          = ["GET"]
+    response_header = ["Content-Type"]
+    max_age_seconds = 3600
+  }
+
+  depends_on = [google_project_service.apis]
+}
+
+# Public read access for project assets (logos, etc.)
+resource "google_storage_bucket_iam_member" "public_read" {
+  bucket = google_storage_bucket.default.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
+
 # ─── Firebase Hosting ──────────────────────────────────────────────────────────
 resource "google_firebase_hosting_site" "backoffice" {
   provider = google-beta
