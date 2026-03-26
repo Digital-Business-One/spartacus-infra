@@ -42,12 +42,14 @@ resource "google_identity_platform_config" "auth" {
 }
 
 # ─── Firebase Storage ──────────────────────────────────────────────────────────
-# The default Firebase Storage bucket uses the .appspot.com domain.
-# It must be created here (not via .firebasestorage.app which is Google-managed).
+# The default bucket was created by Firebase Console as
+# {project_id}.firebasestorage.app. Import it into Terraform state with:
+#   terraform import google_storage_bucket.firebase_storage spartacus-artes-marciais.firebasestorage.app
+#   terraform import google_firebase_storage_bucket.default projects/spartacus-artes-marciais/buckets/spartacus-artes-marciais.firebasestorage.app
 
 resource "google_storage_bucket" "firebase_storage" {
   project                     = var.project_id
-  name                        = "${var.project_id}.appspot.com"
+  name                        = "${var.project_id}.firebasestorage.app"
   location                    = var.region
   uniform_bucket_level_access = true
 
@@ -58,15 +60,15 @@ resource "google_storage_bucket" "firebase_storage" {
     max_age_seconds = 3600
   }
 
-  depends_on = [google_project_service.apis]
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_firebase_storage_bucket" "default" {
   provider  = google-beta
   project   = var.project_id
   bucket_id = google_storage_bucket.firebase_storage.name
-
-  depends_on = [google_firebase_project.spartacus]
 }
 
 # Public read access for project assets (logos, etc.)
