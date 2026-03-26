@@ -42,18 +42,12 @@ resource "google_identity_platform_config" "auth" {
 }
 
 # ─── Firebase Storage ──────────────────────────────────────────────────────────
+# The default Firebase Storage bucket uses the .appspot.com domain.
+# It must be created here (not via .firebasestorage.app which is Google-managed).
 
-resource "google_firebase_storage_bucket" "default" {
-  provider  = google-beta
-  project   = var.project_id
-  bucket_id = google_storage_bucket.default.name
-
-  depends_on = [google_firebase_project.spartacus]
-}
-
-resource "google_storage_bucket" "default" {
+resource "google_storage_bucket" "firebase_storage" {
   project                     = var.project_id
-  name                        = "${var.project_id}.firebasestorage.app"
+  name                        = "${var.project_id}.appspot.com"
   location                    = var.region
   uniform_bucket_level_access = true
 
@@ -67,9 +61,17 @@ resource "google_storage_bucket" "default" {
   depends_on = [google_project_service.apis]
 }
 
+resource "google_firebase_storage_bucket" "default" {
+  provider  = google-beta
+  project   = var.project_id
+  bucket_id = google_storage_bucket.firebase_storage.name
+
+  depends_on = [google_firebase_project.spartacus]
+}
+
 # Public read access for project assets (logos, etc.)
 resource "google_storage_bucket_iam_member" "public_read" {
-  bucket = google_storage_bucket.default.name
+  bucket = google_storage_bucket.firebase_storage.name
   role   = "roles/storage.objectViewer"
   member = "allUsers"
 }
