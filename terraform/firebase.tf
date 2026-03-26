@@ -71,13 +71,6 @@ resource "google_firebase_storage_bucket" "default" {
   bucket_id = google_storage_bucket.firebase_storage.name
 }
 
-# Public read access for project assets (logos, etc.)
-resource "google_storage_bucket_iam_member" "public_read" {
-  bucket = google_storage_bucket.firebase_storage.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
-
 # ─── Firebase Hosting ──────────────────────────────────────────────────────────
 resource "google_firebase_hosting_site" "backoffice" {
   provider = google-beta
