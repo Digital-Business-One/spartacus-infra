@@ -25,6 +25,12 @@ resource "google_project_iam_member" "cloud_run_firebase_auth" {
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+resource "google_project_iam_member" "cloud_run_pubsub_publisher" {
+  project = var.project_id
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
 # ─── Workload Identity Federation (GitHub Actions — keyless) ─────────────────
 
 resource "google_iam_workload_identity_pool" "github" {
@@ -92,6 +98,19 @@ resource "google_project_iam_member" "github_firebase_admin" {
 # Necessário para o GitHub Actions poder especificar a SA do Cloud Run no deploy
 resource "google_service_account_iam_member" "github_impersonate_cloud_run" {
   service_account_id = google_service_account.cloud_run.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+# Necessário para deploy da Cloud Function via GitHub Actions
+resource "google_project_iam_member" "github_cloudfunctions_developer" {
+  project = var.project_id
+  role    = "roles/cloudfunctions.developer"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_service_account_iam_member" "github_impersonate_fn_sa" {
+  service_account_id = google_service_account.send_email_fn.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.github_actions.email}"
 }

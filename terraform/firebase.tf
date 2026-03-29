@@ -41,6 +41,43 @@ resource "google_identity_platform_config" "auth" {
   ]
 }
 
+# ─── Firebase Storage ──────────────────────────────────────────────────────────
+# The default bucket was created by Firebase Console as
+# {project_id}.firebasestorage.app. Import it into Terraform state with:
+#   terraform import google_storage_bucket.firebase_storage spartacus-artes-marciais.firebasestorage.app
+#   terraform import google_firebase_storage_bucket.default projects/spartacus-artes-marciais/buckets/spartacus-artes-marciais.firebasestorage.app
+
+resource "google_storage_bucket" "firebase_storage" {
+  project                     = var.project_id
+  name                        = "${var.project_id}.firebasestorage.app"
+  location                    = var.region
+  uniform_bucket_level_access = true
+
+  cors {
+    origin          = ["*"]
+    method          = ["GET"]
+    response_header = ["Content-Type"]
+    max_age_seconds = 3600
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "google_firebase_storage_bucket" "default" {
+  provider  = google-beta
+  project   = var.project_id
+  bucket_id = google_storage_bucket.firebase_storage.name
+}
+
+# Public read, authenticated write (via Cloud Run SA or Firebase Auth)
+resource "google_storage_bucket_iam_member" "public_read" {
+  bucket = google_storage_bucket.firebase_storage.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
+
 # ─── Firebase Hosting ──────────────────────────────────────────────────────────
 resource "google_firebase_hosting_site" "backoffice" {
   provider = google-beta
