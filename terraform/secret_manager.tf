@@ -1,6 +1,6 @@
-resource "google_secret_manager_secret" "mailersend_api_key" {
+resource "google_secret_manager_secret" "sendgrid_api_key" {
   project   = var.project_id
-  secret_id = "MAILERSEND_API_KEY"
+  secret_id = "SENDGRID_API_KEY"
 
   replication {
     auto {}
@@ -9,9 +9,6 @@ resource "google_secret_manager_secret" "mailersend_api_key" {
   depends_on = [google_project_service.apis]
 }
 
-# Versão do secret gerenciada manualmente (gcloud ou Firebase Extension).
-# Terraform apenas cria o secret container, não gerencia o valor.
-#
-# Para definir o valor:
-#   echo -n "mlsn.suachave" | gcloud secrets versions add MAILERSEND_API_KEY \
+# Versão do secret gerenciada manualmente:
+#   echo -n "SG.suachave" | gcloud secrets versions add SENDGRID_API_KEY \
 #     --project=spartacus-artes-marciais --data-file=-
