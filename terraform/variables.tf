@@ -16,6 +16,6 @@ variable "github_org" {
 
 variable "cors_origins" {
   type        = string
-  default     = "https://backoffice.spartacus.app.br,https://spartacus.app.br"
+  default     = "https://backoffice.spartacus.app.br,https://spartacus.app.br,https://app.spartacus.app.br,https://spartacus-artes-marciais-app.web.app"
   description = "Origens CORS permitidas pelo backend (separadas por vírgula)"
 }

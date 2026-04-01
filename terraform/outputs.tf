@@ -24,6 +24,11 @@ output "cloud_run_sa" {
 }
 
 output "firebase_hosting_url" {
-  description = "URL padrão do Firebase Hosting (antes do domínio customizado)"
+  description = "URL padrão do Firebase Hosting — backoffice"
   value       = "https://${var.project_id}.web.app"
+}
+
+output "firebase_hosting_app_url" {
+  description = "URL padrão do Firebase Hosting — app PWA"
+  value       = "https://${var.project_id}-app.web.app"
 }
