@@ -25,30 +25,27 @@ resource "google_project_iam_member" "cloud_run_firebase_auth" {
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
-# ─── Service Account: Cloud Functions ────────────────────────────────────────
-# Usada pelo orchestrator, send_email e send_push.
-# Nota: a SA fn-send-email foi criada manualmente antes do Terraform.
-# Para novos ambientes, importar com:
-#   terraform import google_service_account.cloud_functions fn-send-email@{project_id}.iam.gserviceaccount.com
-
-resource "google_service_account" "cloud_functions" {
-  project      = var.project_id
-  account_id   = "fn-send-email"
-  display_name = "Spartacus Cloud Functions SA"
-  depends_on   = [google_project_service.apis]
+resource "google_project_iam_member" "cloud_run_pubsub_publisher" {
+  project = var.project_id
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+# ─── IAM: Cloud Functions (send_email SA) ────────────────────────────────────
+# SA definida em cloud_functions.tf. IAM adicionais para RFC-11:
+
+# Orchestrator e send_push precisam ler/escrever Firestore
 resource "google_project_iam_member" "fn_firestore" {
   project = var.project_id
   role    = "roles/datastore.user"
-  member  = "serviceAccount:${google_service_account.cloud_functions.email}"
+  member  = "serviceAccount:${google_service_account.send_email_fn.email}"
 }
 
 # send_push precisa enviar via FCM
 resource "google_project_iam_member" "fn_fcm" {
   project = var.project_id
   role    = "roles/firebase.sdkAdminServiceAgent"
-  member  = "serviceAccount:${google_service_account.cloud_functions.email}"
+  member  = "serviceAccount:${google_service_account.send_email_fn.email}"
 }
 
 # ─── Workload Identity Federation (GitHub Actions — keyless) ─────────────────
@@ -118,6 +115,19 @@ resource "google_project_iam_member" "github_firebase_admin" {
 # Necessário para o GitHub Actions poder especificar a SA do Cloud Run no deploy
 resource "google_service_account_iam_member" "github_impersonate_cloud_run" {
   service_account_id = google_service_account.cloud_run.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+# Necessário para deploy da Cloud Function via GitHub Actions
+resource "google_project_iam_member" "github_cloudfunctions_developer" {
+  project = var.project_id
+  role    = "roles/cloudfunctions.developer"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_service_account_iam_member" "github_impersonate_fn_sa" {
+  service_account_id = google_service_account.send_email_fn.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.github_actions.email}"
 }

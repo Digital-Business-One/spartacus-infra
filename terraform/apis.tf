@@ -11,8 +11,11 @@ locals {
     "firestore.googleapis.com",
     "storage.googleapis.com",
     "secretmanager.googleapis.com",
-    "cloudscheduler.googleapis.com",
+    "pubsub.googleapis.com",
     "cloudfunctions.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "eventarc.googleapis.com",
+    "cloudscheduler.googleapis.com",
   ]
 }
 
