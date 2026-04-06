@@ -25,23 +25,24 @@ resource "google_project_iam_member" "cloud_run_firebase_auth" {
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
-resource "google_project_iam_member" "cloud_run_pubsub_publisher" {
-  project = var.project_id
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${google_service_account.cloud_run.email}"
-}
-
 # ─── IAM: Cloud Functions (send_email SA) ────────────────────────────────────
-# SA definida em cloud_functions.tf. IAM adicionais para RFC-11:
+# SA definida em cloud_functions.tf.
 
 # Orchestrator e send_push precisam ler/escrever Firestore
-resource "google_project_iam_member" "fn_firestore" {
+resource "google_project_iam_member" "fn_firestore_user" {
   project = var.project_id
   role    = "roles/datastore.user"
   member  = "serviceAccount:${google_service_account.send_email_fn.email}"
 }
 
-# send_push precisa enviar via FCM
+# Cloud Functions precisam invocar Cloud Run (Eventarc triggers)
+resource "google_project_iam_member" "fn_run_invoker" {
+  project = var.project_id
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.send_email_fn.email}"
+}
+
+# send_push precisa enviar via FCM (RFC-11)
 resource "google_project_iam_member" "fn_fcm" {
   project = var.project_id
   role    = "roles/firebase.sdkAdminServiceAgent"
@@ -128,6 +129,13 @@ resource "google_project_iam_member" "github_cloudfunctions_developer" {
 
 resource "google_service_account_iam_member" "github_impersonate_fn_sa" {
   service_account_id = google_service_account.send_email_fn.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+# Eventarc usa default compute SA como agente — GitHub Actions precisa impersonar
+resource "google_service_account_iam_member" "github_impersonate_default_compute" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.project_number}-compute@developer.gserviceaccount.com"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.github_actions.email}"
 }

@@ -14,6 +14,11 @@ variable "github_org" {
   description = "Organização GitHub (ex: Digital-Business-One)"
 }
 
+variable "project_number" {
+  type        = string
+  description = "Número do projeto GCP (ex: 820921472402)"
+}
+
 variable "cors_origins" {
   type        = string
   default     = "https://backoffice.spartacus.app.br,https://spartacus.app.br,https://app.spartacus.app.br,https://spartacus-artes-marciais-app.web.app"
