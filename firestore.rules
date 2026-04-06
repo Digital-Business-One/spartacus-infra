@@ -25,6 +25,37 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ─── RFC-11: Timeline collections ────────────────────────────────────────
+
+    // Posts — authenticated reads; writes via backend only (Admin SDK)
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Timeline entries — authenticated reads; writes via orchestrator only (Admin SDK)
+    match /timeline_entries/{entryId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+
+      // Reactions sub-collection — authenticated reads; writes via backend (Admin SDK)
+      match /reactions/{userId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+    }
+
+    // Calendar entries — authenticated reads; writes via orchestrator only (Admin SDK)
+    match /eventos_calendario/{calId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Push queue — no client access; orchestrator writes, send_push reads (Admin SDK)
+    match /push_queue/{pushId} {
+      allow read, write: if false;
+    }
+
     // All other collections — authenticated reads, no client writes
     match /{document=**} {
       allow read: if request.auth != null;

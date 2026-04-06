@@ -15,6 +15,7 @@ locals {
     "cloudfunctions.googleapis.com",
     "cloudbuild.googleapis.com",
     "eventarc.googleapis.com",
+    "cloudscheduler.googleapis.com",
   ]
 }
 

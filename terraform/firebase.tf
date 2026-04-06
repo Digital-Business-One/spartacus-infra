@@ -86,3 +86,11 @@ resource "google_firebase_hosting_site" "backoffice" {
 
   depends_on = [google_firebase_project.spartacus]
 }
+
+resource "google_firebase_hosting_site" "app" {
+  provider = google-beta
+  project  = var.project_id
+  site_id  = "${var.project_id}-app"
+
+  depends_on = [google_firebase_project.spartacus]
+}
