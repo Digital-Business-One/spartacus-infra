@@ -25,12 +25,6 @@ resource "google_project_iam_member" "cloud_run_firebase_auth" {
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
-resource "google_project_iam_member" "cloud_run_pubsub_publisher" {
-  project = var.project_id
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${google_service_account.cloud_run.email}"
-}
-
 # ─── IAM: Cloud Functions (send_email SA) ────────────────────────────────────
 # SA definida em cloud_functions.tf.
 
