@@ -49,23 +49,6 @@ resource "google_project_iam_member" "fn_fcm" {
   member  = "serviceAccount:${google_service_account.send_email_fn.email}"
 }
 
-# ─── IAM: Cloud Functions (send_email SA) ────────────────────────────────────
-# SA definida em cloud_functions.tf. IAM adicionais para RFC-11:
-
-# Orchestrator e send_push precisam ler/escrever Firestore
-resource "google_project_iam_member" "fn_firestore" {
-  project = var.project_id
-  role    = "roles/datastore.user"
-  member  = "serviceAccount:${google_service_account.send_email_fn.email}"
-}
-
-# send_push precisa enviar via FCM
-resource "google_project_iam_member" "fn_fcm" {
-  project = var.project_id
-  role    = "roles/firebase.sdkAdminServiceAgent"
-  member  = "serviceAccount:${google_service_account.send_email_fn.email}"
-}
-
 # ─── Workload Identity Federation (GitHub Actions — keyless) ─────────────────
 
 resource "google_iam_workload_identity_pool" "github" {
