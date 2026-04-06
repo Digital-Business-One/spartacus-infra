@@ -9,7 +9,7 @@ services:
       bash -c "
       echo 'rules_version = \"2\"; service firebase.storage { match /b/{bucket}/o { match /{allPaths=**} { allow read, write: if true; } } }' > /app/storage.rules &&
       echo '{
-        \"functions\":[{\"source\":\"functions/send_email\",\"runtime\":\"python312\",\"codebase\":\"send-email\"}],
+        \"functions\":[{\"source\":\"functions/send_email\",\"runtime\":\"python312\",\"codebase\":\"send-email\"},{\"source\":\"functions/orchestrator\",\"runtime\":\"python312\",\"codebase\":\"orchestrator\"},{\"source\":\"functions/send_push\",\"runtime\":\"python312\",\"codebase\":\"send-push\"}],
         \"storage\":{\"rules\":\"storage.rules\"},
         \"emulators\":{
           \"auth\":{\"port\":9099,\"host\":\"0.0.0.0\"},
@@ -21,6 +21,10 @@ services:
           \"ui\":{\"enabled\":true,\"host\":\"0.0.0.0\",\"port\":4000}
         }
       }' > /app/firebase.json &&
+      for fn in functions/send_email functions/orchestrator functions/send_push; do
+        python3.12 -m venv $$fn/venv &&
+        $$fn/venv/bin/pip install -q -r $$fn/requirements.txt;
+      done &&
       npx -y firebase-tools@latest emulators:start
       --project spartacus-artes-marciais
       --only firestore,auth,storage,functions,pubsub,eventarc
@@ -37,6 +41,8 @@ services:
     volumes:
       - ./emulator-data:/emulator-data
       - ../backend/functions/send_email:/app/functions/send_email
+      - ../backend/functions/orchestrator:/app/functions/orchestrator
+      - ../backend/functions/send_push:/app/functions/send_push
     environment:
       - FIREBASE_TOKEN=${FIREBASE_TOKEN:-}
       - GOOGLE_CLOUD_PROJECT=${FIREBASE_PROJECT_ID:-spartacus-artes-marciais}

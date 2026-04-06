@@ -25,6 +25,32 @@ resource "google_project_iam_member" "cloud_run_firebase_auth" {
   member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+# ─── Service Account: Cloud Functions ────────────────────────────────────────
+# Usada pelo orchestrator, send_email e send_push.
+# Nota: a SA fn-send-email foi criada manualmente antes do Terraform.
+# Para novos ambientes, importar com:
+#   terraform import google_service_account.cloud_functions fn-send-email@{project_id}.iam.gserviceaccount.com
+
+resource "google_service_account" "cloud_functions" {
+  project      = var.project_id
+  account_id   = "fn-send-email"
+  display_name = "Spartacus Cloud Functions SA"
+  depends_on   = [google_project_service.apis]
+}
+
+resource "google_project_iam_member" "fn_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.cloud_functions.email}"
+}
+
+# send_push precisa enviar via FCM
+resource "google_project_iam_member" "fn_fcm" {
+  project = var.project_id
+  role    = "roles/firebase.sdkAdminServiceAgent"
+  member  = "serviceAccount:${google_service_account.cloud_functions.email}"
+}
+
 # ─── Workload Identity Federation (GitHub Actions — keyless) ─────────────────
 
 resource "google_iam_workload_identity_pool" "github" {

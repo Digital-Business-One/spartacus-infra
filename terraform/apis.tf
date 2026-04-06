@@ -11,6 +11,8 @@ locals {
     "firestore.googleapis.com",
     "storage.googleapis.com",
     "secretmanager.googleapis.com",
+    "cloudscheduler.googleapis.com",
+    "cloudfunctions.googleapis.com",
   ]
 }
 
