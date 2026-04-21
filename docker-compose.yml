@@ -5,6 +5,8 @@ services:
       context: ./emulators
       dockerfile: Dockerfile
     working_dir: /app
+    # stop_grace_period gives the emulator time to export data before SIGKILL
+    stop_grace_period: 30s
     command: >
       bash -c "
       echo 'rules_version = \"2\"; service firebase.storage { match /b/{bucket}/o { match /{allPaths=**} { allow read, write: if true; } } }' > /app/storage.rules &&
@@ -22,14 +24,24 @@ services:
         }
       }' > /app/firebase.json &&
       for fn in functions/send_email functions/orchestrator functions/send_push; do
-        python3.12 -m venv $$fn/venv &&
+        if [ ! -d $$fn/venv ]; then
+          python3.12 -m venv $$fn/venv;
+        fi &&
         $$fn/venv/bin/pip install -q -r $$fn/requirements.txt;
       done &&
-      npx -y firebase-tools@latest emulators:start
+      IMPORT_FLAG='' &&
+      chmod -R 755 /emulator-data 2>/dev/null;
+      if [ -d /emulator-data/saved/firestore_export ] || [ -d /emulator-data/saved/auth_export ]; then
+        echo '[emulators] Importing saved data from /emulator-data/saved' &&
+        IMPORT_FLAG='--import /emulator-data/saved';
+      else
+        echo '[emulators] No saved data found — starting fresh';
+      fi &&
+      exec firebase emulators:start
       --project spartacus-artes-marciais
       --only firestore,auth,storage,functions,pubsub,eventarc
-      --import=/emulator-data
-      --export-on-exit"
+      --export-on-exit /emulator-data/saved
+      $$IMPORT_FLAG"
     ports:
       - "4000:4000"   # Emulator UI
       - "5001:5001"   # Functions
@@ -46,6 +58,12 @@ services:
     environment:
       - FIREBASE_TOKEN=${FIREBASE_TOKEN:-}
       - GOOGLE_CLOUD_PROJECT=${FIREBASE_PROJECT_ID:-spartacus-artes-marciais}
+      - GCLOUD_PROJECT=${FIREBASE_PROJECT_ID:-spartacus-artes-marciais}
+      # Functions run inside this container — tell firebase-admin to use
+      # emulator endpoints instead of real GCP (avoids ADC credential errors)
+      - FIRESTORE_EMULATOR_HOST=localhost:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
+      - FIREBASE_STORAGE_EMULATOR_HOST=localhost:9199
       - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000"]
