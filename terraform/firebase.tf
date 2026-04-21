@@ -16,6 +16,178 @@ resource "google_firestore_database" "default" {
   depends_on = [google_firebase_project.spartacus]
 }
 
+# ─── Firestore Composite Indexes ──────────────────────────────────────────────
+# Managed by Terraform so `terraform apply` keeps them in sync.
+# Remove firestore.indexes.json — single source of truth is here.
+
+# timeline_entries: projectId + createdAt DESC (unfiltered feed)
+resource "google_firestore_index" "timeline_entries_project_created" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "timeline_entries"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "createdAt"
+    order      = "DESCENDING"
+  }
+}
+
+# timeline_entries: projectId + type + createdAt DESC (filtered feed)
+resource "google_firestore_index" "timeline_entries_project_type_created" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "timeline_entries"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "type"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "createdAt"
+    order      = "DESCENDING"
+  }
+}
+
+# timeline_entries: projectId + targetUid + createdAt DESC (user feed)
+resource "google_firestore_index" "timeline_entries_project_target_created" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "timeline_entries"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "targetUid"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "createdAt"
+    order      = "DESCENDING"
+  }
+}
+
+# posts: projectId + createdAt DESC
+resource "google_firestore_index" "posts_project_created" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "posts"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "createdAt"
+    order      = "DESCENDING"
+  }
+}
+
+# posts: projectId + type + createdAt DESC
+resource "google_firestore_index" "posts_project_type_created" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "posts"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "type"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "createdAt"
+    order      = "DESCENDING"
+  }
+}
+
+# attendance: projectId + userId + aulaId
+resource "google_firestore_index" "attendance_project_user_aula" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "attendance"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "userId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "aulaId"
+    order      = "ASCENDING"
+  }
+}
+
+# attendance: projectId + userId + status
+resource "google_firestore_index" "attendance_project_user_status" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "attendance"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "userId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "status"
+    order      = "ASCENDING"
+  }
+}
+
+# attendance: projectId + aulaId + userId (dashboard RFC-14)
+resource "google_firestore_index" "attendance_project_aula_user" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "attendance"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "aulaId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "userId"
+    order      = "ASCENDING"
+  }
+}
+
+# eventos_calendario: projectId + startDate
+resource "google_firestore_index" "eventos_calendario_project_start" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "eventos_calendario"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "startDate"
+    order      = "ASCENDING"
+  }
+}
+
 # ─── Firebase Auth (Identity Toolkit) ─────────────────────────────────────────
 # Habilita o Firebase Auth via Identity Platform.
 # IMPORTANTE: declarar email{} aqui para que o Terraform não desabilite
