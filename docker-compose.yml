@@ -9,20 +9,6 @@ services:
     stop_grace_period: 30s
     command: >
       bash -c "
-      echo 'rules_version = \"2\"; service firebase.storage { match /b/{bucket}/o { match /{allPaths=**} { allow read, write: if true; } } }' > /app/storage.rules &&
-      echo '{
-        \"functions\":[{\"source\":\"functions/send_email\",\"runtime\":\"python312\",\"codebase\":\"send-email\"},{\"source\":\"functions/orchestrator\",\"runtime\":\"python312\",\"codebase\":\"orchestrator\"},{\"source\":\"functions/send_push\",\"runtime\":\"python312\",\"codebase\":\"send-push\"}],
-        \"storage\":{\"rules\":\"storage.rules\"},
-        \"emulators\":{
-          \"auth\":{\"port\":9099,\"host\":\"0.0.0.0\"},
-          \"firestore\":{\"port\":8080,\"host\":\"0.0.0.0\"},
-          \"storage\":{\"port\":9199,\"host\":\"0.0.0.0\"},
-          \"functions\":{\"port\":5001,\"host\":\"0.0.0.0\"},
-          \"pubsub\":{\"port\":8085,\"host\":\"0.0.0.0\"},
-          \"eventarc\":{\"port\":9299,\"host\":\"0.0.0.0\"},
-          \"ui\":{\"enabled\":true,\"host\":\"0.0.0.0\",\"port\":4000}
-        }
-      }' > /app/firebase.json &&
       for fn in functions/send_email functions/orchestrator functions/send_push; do
         if [ ! -d $$fn/venv ]; then
           python3.12 -m venv $$fn/venv;
@@ -52,6 +38,11 @@ services:
       - "9299:9299"   # Eventarc
     volumes:
       - ./emulator-data:/emulator-data
+      # firebase.json + .firebaserc + storage.rules live in the backend repo
+      # and are the same source of truth used by `firebase deploy` in CI.
+      - ../backend/firebase.json:/app/firebase.json:ro
+      - ../backend/.firebaserc:/app/.firebaserc:ro
+      - ../backend/storage.rules:/app/storage.rules:ro
       - ../backend/functions/send_email:/app/functions/send_email
       - ../backend/functions/orchestrator:/app/functions/orchestrator
       - ../backend/functions/send_push:/app/functions/send_push
