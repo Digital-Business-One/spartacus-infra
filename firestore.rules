@@ -17,6 +17,11 @@ service cloud.firestore {
     // Users — only the owner can read/write their own document
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Push tokens — registered client-side by the app (expo-notifications)
+      match /push_tokens/{tokenId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Memberships — authenticated reads; writes via backend only (Admin SDK)
