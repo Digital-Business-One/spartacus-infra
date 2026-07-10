@@ -43,12 +43,20 @@ resource "google_cloud_run_v2_service" "backend" {
 
       env {
         name  = "ROOT_PROJECT_ID"
-        value = "spartacus"
+        value = "spartacus-artes-marciais"
       }
 
       env {
         name  = "CORS_ORIGINS"
         value = var.cors_origins
+      }
+
+      # Base URL do PWA (Expo web). Usada pelo backend para montar o link de
+      # reset de senha (/reset-password?oobCode=...). Se ausente, o link cai no
+      # fallback /auth/action (handler só de verifyEmail) e todo reset falha.
+      env {
+        name  = "APP_WEB_URL"
+        value = "https://app.spartacus.app.br"
       }
     }
   }
