@@ -48,6 +48,12 @@ service cloud.firestore {
         allow read: if request.auth != null;
         allow write: if false;
       }
+
+      // Comments sub-collection — authenticated reads; writes via backend (Admin SDK)
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
     }
 
     // Calendar entries — authenticated reads; writes via orchestrator only (Admin SDK)
