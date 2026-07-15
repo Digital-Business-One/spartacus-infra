@@ -67,6 +67,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Moderation — no client access; app only sees status via GET /moderation/users and /auth/me (Admin SDK)
+    match /moderation/{docId} {
+      allow read, write: if false;
+    }
+
     // All other collections — authenticated reads, no client writes
     match /{document=**} {
       allow read: if request.auth != null;
