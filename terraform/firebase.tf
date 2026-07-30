@@ -172,6 +172,46 @@ resource "google_firestore_index" "attendance_project_aula_user" {
   }
 }
 
+# attendance: projectId + userId + timestamp ASC (histórico janelado do aluno — frequência analítica)
+resource "google_firestore_index" "attendance_project_user_timestamp" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "attendance"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "userId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "timestamp"
+    order      = "ASCENDING"
+  }
+}
+
+# attendance: projectId + turmaId + timestamp ASC (analytics agregado da turma por período)
+resource "google_firestore_index" "attendance_project_turma_timestamp" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "attendance"
+
+  fields {
+    field_path = "projectId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "turmaId"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "timestamp"
+    order      = "ASCENDING"
+  }
+}
+
 # eventos_calendario: projectId + startDate
 resource "google_firestore_index" "eventos_calendario_project_start" {
   project    = var.project_id
